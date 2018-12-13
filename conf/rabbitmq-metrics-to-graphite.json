@@ -1,0 +1,17 @@
+{
+    "graphite_servers": [{
+        "host": "localhost",
+        "port": 2003,
+        "prefix": "mycustomprefix.subprefix"
+    }],
+    "rabbitmq_servers": [{
+        "host": "localhost",
+        "port": 15672,
+        "username": "guest",
+        "password": "guest",
+        "vhost": "/",
+        "queues": [
+            "test", "test2"
+        ]
+    }]
+}
