@@ -27,7 +27,7 @@ else:
 
 def process(rabbitmq, graphite):
     logging.debug(
-        "Processing RabbitMQ: {} on graphite {}".format(rabbitmq, graphite))
+        "Processing RabbitMQ: {} on graphite {}".format(rabbitmq["cluster_name"], graphite["host"]))
     starttime = time.time()
     sock = _socket_for_host_port(graphite["host"], graphite["port"])
     overview = rabbitClient.get_overview()
@@ -36,16 +36,16 @@ def process(rabbitmq, graphite):
             ['channels', 'connections', 'consumers', 'exchanges', 'queues']:
         if m_instance in overview['object_totals']:
             _send_graphite_metric(
-                sock, graphite['prefix'], m_instance, overview['object_totals'][m_instance])
+                sock, graphite, rabbitmq, m_instance, overview['object_totals'][m_instance])
 
     # Aggregated Queue message stats
     for m_instance in \
             ['messages', 'messages_ready', 'messages_unacknowledged']:
         if m_instance in overview['queue_totals']:
-            _send_graphite_metric(sock, graphite['prefix'], 'queue_total-{}-count'.format(
+            _send_graphite_metric(sock, graphite, rabbitmq, 'queue_total-{}-count'.format(
                 m_instance), overview['queue_totals'][m_instance])
 
-            _send_graphite_metric(sock, graphite['prefix'], 'queue_total-{}-rate'.format(m_instance), overview['queue_totals']['{}_details'.format(
+            _send_graphite_metric(sock, graphite, rabbitmq, 'queue_total-{}-rate'.format(m_instance), overview['queue_totals']['{}_details'.format(
                 m_instance)]
                 ['rate'])
 
@@ -57,10 +57,10 @@ def process(rabbitmq, graphite):
                 'redeliver', 'return_unroutable'
             ]:
         if m_instance in overview['message_stats']:
-            _send_graphite_metric(sock, graphite['prefix'], 'message_total-{}-count'.format(
+            _send_graphite_metric(sock, graphite, rabbitmq, 'message_total-{}-count'.format(
                 m_instance), overview['message_stats'][m_instance])
 
-            _send_graphite_metric(sock, graphite['prefix'], 'message_total-{}-rate'.format(m_instance), overview['message_stats']['{}_details'.format(m_instance)]
+            _send_graphite_metric(sock, graphite, rabbitmq, 'message_total-{}-rate'.format(m_instance), overview['message_stats']['{}_details'.format(m_instance)]
                                   ['rate'])
 
     # Configurable per-queue message counts
@@ -79,18 +79,19 @@ def process(rabbitmq, graphite):
             # the consume message is not counted
             count = messages_detail[0]['message_count'] + 1
         _send_graphite_metric(
-            sock, graphite['prefix'], 'msg_count-{}'.format(queue_name), count)
+            sock, graphite, rabbitmq, 'msg_count-{}'.format(queue_name), count)
 
     sock.close()
 
     timediff = time.time() - starttime
-    logging.info('All metrics sent in: {} sec'.format(round(timediff, 2)))
+    logging.info('All metrics has been sent from RabbitMQ [{}] to Graphite [{}] in: {} sec'.format(
+        rabbitmq["cluster_name"], graphite["host"], round(timediff, 2)))
 
 
-def _send_graphite_metric(sock, graphitePrefix, metricName, metricValue):
+def _send_graphite_metric(sock, graphite, rabbitmq, metricName, metricValue):
     now = time.time()
-    metric = '{0}.{1} {2} {3}\n'.format(
-        graphitePrefix, metricName, metricValue, now)
+    metric = '{0}.{1}.{2} {3} {4}\n'.format(
+        graphite["prefix"], rabbitmq["cluster_name"], metricName, metricValue, now)
     logging.debug("Sending metric: {}".format(metric))
     sock.sendall(metric)
 
@@ -103,10 +104,11 @@ def _socket_for_host_port(host, port):
     return sock
 
 
-def main(configFilePath):
+def main():
 
     global rabbitClient
     # load config file
+    configFilePath = args.config
     if os.path.isfile(configFilePath):
         logging.debug('Processing config file {}'.format(configFilePath))
         with open(configFilePath) as configFile:
@@ -114,10 +116,10 @@ def main(configFilePath):
             logging.debug('Graphite configuration: {}'.format(
                 conf["graphite_servers"]))
             logging.debug('RabbitMQ configuration: {}'.format(
-                conf["rabbitmq_servers"]))
-            for rabbitmq in conf["rabbitmq_servers"]:
+                conf["rabbitmq_clusters"]))
+            for rabbitmq in conf["rabbitmq_clusters"]:
                 logging.debug(
-                    'Working on rabbitmq server: {}'.format(rabbitmq['host']))
+                    'Working on Rabbitmq cluster: {}'.format(rabbitmq['cluster_name']))
                 rabbitClient = Client('{}:{}'.format(
                     rabbitmq['host'], rabbitmq['port']), rabbitmq['username'], rabbitmq['password'])
                 for graphite in conf["graphite_servers"]:
@@ -139,4 +141,4 @@ def excepthook(type, value, tb):
 sys.excepthook = excepthook
 
 if __name__ == '__main__':
-    main(args.config)
+    main()

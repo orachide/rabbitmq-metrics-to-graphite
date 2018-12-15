@@ -27,18 +27,31 @@ Example configuration file:
     "graphite_servers": [{
         "host": "localhost",
         "port": 2003,
-        "prefix": "mycustomprefix.subprefix"
+        "prefix": "mycustomprefix.rabbitmq"
     }],
-    "rabbitmq_servers": [{
-        "host": "localhost",
-        "port": 15672,
-        "username": "guest",
-        "password": "guest",
-        "vhost": "/",
-        "queues": [
-            "test", "test2"
-        ]
-    }]
+    "rabbitmq_clusters": [{
+            "cluster_name": "DC1",
+            "host": "localhost",
+            "port": 15672,
+            "username": "guest",
+            "password": "guest",
+            "vhost": "/",
+            "queues": [
+                "test", "test2"
+            ]
+        },
+        {
+            "cluster_name": "DC2",
+            "host": "localhost",
+            "port": 15672,
+            "username": "guest",
+            "password": "guest",
+            "vhost": "/",
+            "queues": [
+                "test", "test2"
+            ]
+        }
+    ]
 }
 ```
 

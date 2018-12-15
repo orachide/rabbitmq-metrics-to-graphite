@@ -8,11 +8,11 @@ def read(fname):
 def run_setup():
     setup(
 	  name='rabbitmq-metrics-to-graphite',
-	  version='0.1',
+	  version='0.2',
 	  description='https://github.com/orachide/rabbitmq-metrics-to-graphite',
 	  keywords = 'RabbitMQ Graphite Metrics',
 	  url='https://github.com/orachide/rabbitmq-metrics-to-graphite',
-	  download_url = 'https://github.com/orachide/rabbitmq-metrics-to-graphite/archive/0.1.tar.gz',
+	  download_url = 'https://github.com/orachide/rabbitmq-metrics-to-graphite/archive/0.2.tar.gz',
 	  author='Rachide Ouattara',
 	  author_email='ouattchidi@gmail.com',
 	  license='BSD',
