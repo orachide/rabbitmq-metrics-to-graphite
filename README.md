@@ -57,3 +57,9 @@ rabbitmq-metrics-to-graphite /path/to/configfile
 # Verbose
 rabbitmq-metrics-to-graphite /path/to/configfile -v
 ```
+
+## Grafana dashboard
+
+Using [grafana-rabbitmq-metrics.json](./grafana-rabbitmq-metrics.json) we can obtain the following dashboard
+
+![Grafana dashboard example](./images/grafana-dashpoard.png)
