@@ -1,3 +1,4 @@
-#Deploy on PypiLive
-python setup.py sdist upload -r pypi
-python setup.py register -r pypi
+# Deploy on PypiLive
+python setup.py sdist
+# pip install twine
+twine upload dist/*

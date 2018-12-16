@@ -10,10 +10,7 @@
             "port": 15672,
             "username": "guest",
             "password": "guest",
-            "vhost": "/",
-            "queues": [
-                "test", "test2"
-            ]
+            "vhost": "/"
         },
         {
             "cluster_name": "DC2",
@@ -21,10 +18,7 @@
             "port": 15672,
             "username": "guest",
             "password": "guest",
-            "vhost": "/",
-            "queues": [
-                "test", "test2"
-            ]
+            "vhost": "/"
         }
     ]
 }

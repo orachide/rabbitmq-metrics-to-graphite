@@ -36,16 +36,16 @@ def process(rabbitmq, graphite):
             ['channels', 'connections', 'consumers', 'exchanges', 'queues']:
         if m_instance in overview['object_totals']:
             _send_graphite_metric(
-                sock, graphite, rabbitmq, m_instance, overview['object_totals'][m_instance])
+                sock, graphite, rabbitmq, '{}_total_count'.format(m_instance), overview['object_totals'][m_instance])
 
     # Aggregated Queue message stats
     for m_instance in \
             ['messages', 'messages_ready', 'messages_unacknowledged']:
         if m_instance in overview['queue_totals']:
-            _send_graphite_metric(sock, graphite, rabbitmq, 'queue_total-{}-count'.format(
+            _send_graphite_metric(sock, graphite, rabbitmq, 'queue_{}_total_count'.format(
                 m_instance), overview['queue_totals'][m_instance])
 
-            _send_graphite_metric(sock, graphite, rabbitmq, 'queue_total-{}-rate'.format(m_instance), overview['queue_totals']['{}_details'.format(
+            _send_graphite_metric(sock, graphite, rabbitmq, 'queue_{}_total_rate'.format(m_instance), overview['queue_totals']['{}_details'.format(
                 m_instance)]
                 ['rate'])
 
@@ -57,33 +57,73 @@ def process(rabbitmq, graphite):
                 'redeliver', 'return_unroutable'
             ]:
         if m_instance in overview['message_stats']:
-            _send_graphite_metric(sock, graphite, rabbitmq, 'message_total-{}-count'.format(
+            _send_graphite_metric(sock, graphite, rabbitmq, 'message_{}_total_count'.format(
                 m_instance), overview['message_stats'][m_instance])
 
-            _send_graphite_metric(sock, graphite, rabbitmq, 'message_total-{}-rate'.format(m_instance), overview['message_stats']['{}_details'.format(m_instance)]
+            _send_graphite_metric(sock, graphite, rabbitmq, 'message_{}_total_rate'.format(m_instance), overview['message_stats']['{}_details'.format(m_instance)]
                                   ['rate'])
 
-    # Configurable per-queue message counts
-    for queue_name in rabbitmq["queues"]:
-        messages_detail = None
-        try:
-            messages_detail = rabbitClient.get_messages(
-                rabbitmq["vhost"], queue_name, 1, True)
-        except HTTPError as err:
-            logging.error(
-                'Error Opening Queue [{}] details: {}'
-                .format(queue_name, err))
-        if messages_detail is None:
-            count = 0
-        else:
-            # the consume message is not counted
-            count = messages_detail[0]['message_count'] + 1
-        _send_graphite_metric(
-            sock, graphite, rabbitmq, 'msg_count-{}'.format(queue_name), count)
+    # Connections metrics
+    connections = rabbitClient.get_connections()
+    connections_dict = {'channels': 'channels',
+                        'recv_oct': 'received_bytes',
+                        'recv_cnt': 'received_packets',
+                        'send_oct': 'send_bytes',
+                        'send_cnt': 'send_packets',
+                        'send_pend': 'send_pending'
+                        }
+    for m_instance, m_instance_label in connections_dict.iteritems():
+        if connections is None:
+            _send_graphite_metric(
+                sock, graphite, rabbitmq, 'connections.{}'.format(m_instance_label), 0)
+        elif m_instance in connections:
+            _send_graphite_metric(sock, graphite, rabbitmq,
+                                  'connections.{}'.format(m_instance_label), connections[m_instance])
+
+    # Node metrics
+    nodes = rabbitClient.get_nodes()
+    nodes_dict = {'running': 'node_running',
+                  'mem_used': 'node_mem_used',
+                  'mem_limit': 'node_mem_limit',
+                  'mem_alarm': 'node_mem_alarm',
+                  'disk_free': 'node_disk_free',
+                  'disk_free_alarm': 'node_disk_free_alarm',
+                  'disk_free_limit': 'node_disk_free_limit',
+                  'fd_used': 'node_file_descriptor_used',
+                  'fd_total': 'node_file_descriptor_total',
+                  'sockets_used': 'node_sockets_used',
+                  'sockets_total': 'node_sockets_total',
+                  'partitions_len': 'node_partitions'
+                  }
+    for m_instance, m_instance_label in nodes_dict.iteritems():
+        if nodes is not None:
+            for node in nodes:
+                if m_instance in node:
+                    # We multiply the metric value by 1 to handle boolean conversion
+                    _send_graphite_metric(sock, graphite, rabbitmq,
+                                          'nodes.{}.{}'.format(node['name'].replace('.', '_'), m_instance_label), node[m_instance]*1)
+
+    # Queues
+    queues = rabbitClient.get_queues()
+    for m_instance in \
+            ['messages_ready', 'messages_unacknowledged', 'messages',
+             'messages_ready_ram', 'messages_unacknowledged_ram', 'messages_ram',
+             'messages_persistent', 'message_bytes', 'message_bytes_ready',
+             'message_bytes_unacknowledged', 'message_bytes_ram', 'message_bytes_persistent',
+             'consumers', 'consumer_utilisation', 'memory', 'head_message_timestamp']:
+        if queues is not None:
+            for queue in queues:
+                if m_instance in queue:
+                    _send_graphite_metric(sock, graphite, rabbitmq,
+                                          'queues.{}.{}'.format(queue['name'].replace('.', '_'), m_instance), queue[m_instance])
+
+    timediff = time.time() - starttime
+    # Send time elapsed for scrapping metrics
+    _send_graphite_metric(sock, graphite, rabbitmq,
+                          'scraptime_elapsed_seconds', timediff)
 
     sock.close()
 
-    timediff = time.time() - starttime
     logging.info('All metrics has been sent from RabbitMQ [{}] to Graphite [{}] in: {} sec'.format(
         rabbitmq["cluster_name"], graphite["host"], round(timediff, 2)))
 

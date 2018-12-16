@@ -35,10 +35,7 @@ Example configuration file:
             "port": 15672,
             "username": "guest",
             "password": "guest",
-            "vhost": "/",
-            "queues": [
-                "test", "test2"
-            ]
+            "vhost": "/"
         },
         {
             "cluster_name": "DC2",
@@ -46,10 +43,7 @@ Example configuration file:
             "port": 15672,
             "username": "guest",
             "password": "guest",
-            "vhost": "/",
-            "queues": [
-                "test", "test2"
-            ]
+            "vhost": "/"
         }
     ]
 }
