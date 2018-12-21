@@ -6,13 +6,17 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 def run_setup():
+	with open('README.md') as f:
+      long_description = f.read()
     setup(
 	  name='rabbitmq-metrics-to-graphite',
-	  version='0.3',
+	  version='0.4',
 	  description='https://github.com/orachide/rabbitmq-metrics-to-graphite',
+	  long_description=long_description,
+      long_description_content_type='text/markdown',
 	  keywords = 'RabbitMQ Graphite Metrics',
 	  url='https://github.com/orachide/rabbitmq-metrics-to-graphite',
-	  download_url = 'https://github.com/orachide/rabbitmq-metrics-to-graphite/archive/0.3.tar.gz',
+	  download_url = 'https://github.com/orachide/rabbitmq-metrics-to-graphite/archive/0.4.tar.gz',
 	  author='Rachide Ouattara',
 	  author_email='ouattchidi@gmail.com',
 	  license='BSD',
