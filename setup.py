@@ -5,9 +5,10 @@ from setuptools import setup
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+with open('README.md') as f:
+    long_description = f.read()
+
 def run_setup():
-	with open('README.md') as f:
-      long_description = f.read()
     setup(
 	  name='rabbitmq-metrics-to-graphite',
 	  version='0.4',
