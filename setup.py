@@ -5,18 +5,19 @@ from setuptools import setup
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+with open('README.md') as f:
+    long_description = f.read()
+
 def run_setup():
-	with open('README.md') as f:
-      long_description = f.read()
     setup(
 	  name='rabbitmq-metrics-to-graphite',
-	  version='0.4',
+	  version='0.5',
 	  description='https://github.com/orachide/rabbitmq-metrics-to-graphite',
 	  long_description=long_description,
       long_description_content_type='text/markdown',
 	  keywords = 'RabbitMQ Graphite Metrics',
 	  url='https://github.com/orachide/rabbitmq-metrics-to-graphite',
-	  download_url = 'https://github.com/orachide/rabbitmq-metrics-to-graphite/archive/0.4.tar.gz',
+	  download_url = 'https://github.com/orachide/rabbitmq-metrics-to-graphite/archive/0.5.tar.gz',
 	  author='Rachide Ouattara',
 	  author_email='ouattchidi@gmail.com',
 	  license='BSD',
