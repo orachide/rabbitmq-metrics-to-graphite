@@ -11,13 +11,13 @@ with open('README.md') as f:
 def run_setup():
     setup(
 	  name='rabbitmq-metrics-to-graphite',
-	  version='0.5',
+	  version='0.6',
 	  description='https://github.com/orachide/rabbitmq-metrics-to-graphite',
 	  long_description=long_description,
       long_description_content_type='text/markdown',
 	  keywords = 'RabbitMQ Graphite Metrics',
 	  url='https://github.com/orachide/rabbitmq-metrics-to-graphite',
-	  download_url = 'https://github.com/orachide/rabbitmq-metrics-to-graphite/archive/0.5.tar.gz',
+	  download_url = 'https://github.com/orachide/rabbitmq-metrics-to-graphite/archive/0.6.tar.gz',
 	  author='Rachide Ouattara',
 	  author_email='ouattchidi@gmail.com',
 	  license='BSD',
